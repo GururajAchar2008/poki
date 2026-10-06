@@ -35,15 +35,15 @@ The default WebSocket endpoint is `ws://127.0.0.1:5000/ws`. Set `VITE_SIGNALING_
 
 ## Deploy to GitHub Pages
 
-The workflow in `.github/workflows/deploy-pages.yml` deploys the PWA from `main` to:
+The workflow in `.github/workflows/deploy-pages.yml` builds the PWA and publishes the `dist` folder to a `gh-pages` branch. The site is available at:
 
 ```text
 https://gururajachar2008.github.io/poki/
 ```
 
-Before the first deployment, open the repository's **Settings > Pages**, choose **GitHub Actions** as the source, then add a repository variable named `VITE_SIGNALING_URL` under **Settings > Secrets and variables > Actions > Variables**. Set it to the deployed WebSocket endpoint, for example `wss://your-backend.example.com/ws`.
+Before the first deployment, open the repository's **Settings > Pages**, choose **Deploy from a branch**, select `gh-pages` and `/ (root)`, then add a repository variable named `VITE_SIGNALING_URL` under **Settings > Secrets and variables > Actions > Variables**. Set it to the deployed WebSocket endpoint, for example `wss://your-backend.example.com/ws`.
 
-The workflow uses the `/poki/` base path and publishes only the static frontend. The Flask relay remains a separate deployment.
+The workflow uses the `/poki/` base path and publishes only the static frontend. The Flask relay remains a separate deployment. The branch-based publisher avoids the Pages API 404 that occurs when Pages has not yet been enabled for a repository.
 
 ## Current MVP boundary
 
