@@ -55,7 +55,8 @@ const SECRET_KEY = "poki.unlockHash";
 const ROOM_KEY = "poki.room";
 const DEVICE_KEY = "poki.device";
 const SIGNALING_URL =
-  import.meta.env.VITE_SIGNALING_URL ?? "ws://127.0.0.1:5000/ws";
+  import.meta.env.VITE_SIGNALING_URL ??
+  "https://poki-backend-ktsn.onrender.com/ws";
 
 const calculatorKeys = [
   "C",
