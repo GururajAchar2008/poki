@@ -43,7 +43,7 @@ type Attachment = {
 };
 
 type PeerPacket = {
-  type: "presence" | "message" | "error";
+  type: "presence" | "message" | "error" | "connected";
   online?: boolean;
   message?: Message;
   error?: string;
@@ -173,7 +173,7 @@ function App() {
   const [messages, setMessages] = useState<Message[]>(readMessages);
   const [messageText, setMessageText] = useState("");
   const [online, setOnline] = useState(false);
-  const [peerName, setPeerName] = useState("your person");
+  const [peerName, setPeerName] = useState("Waiting for partner");
   const [connectionError, setConnectionError] = useState("");
   const [attachmentUrls, setAttachmentUrls] = useState<Record<string, string>>(
     {},
@@ -216,6 +216,9 @@ function App() {
           setOnline(Boolean(packet.online));
           if (packet.name) setPeerName(packet.name);
         }
+        if (packet.type === "connected") {
+          setOnline(Boolean(packet.online));
+        }
         if (packet.type === "error") {
           setConnectionError(
             packet.error ?? "Unable to join this private room.",
@@ -238,8 +241,19 @@ function App() {
         // Ignore malformed packets from the signaling layer.
       }
     };
-    socket.onclose = () => setOnline(false);
-    socket.onerror = () => setOnline(false);
+    socket.onclose = () => {
+      setOnline(false);
+      setConnectionError(
+        (current) =>
+          current || "Connection closed. Check the backend URL and try again.",
+      );
+    };
+    socket.onerror = () => {
+      setOnline(false);
+      setConnectionError(
+        "Could not connect to the Poki relay. Make sure the backend is running with wss:// enabled.",
+      );
+    };
     return () => {
       socket.close();
       socketRef.current = null;
