@@ -5,6 +5,7 @@ import { defineConfig } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: process.env.GITHUB_ACTIONS ? "/poki/" : "/",
   plugins: [
     react(),
     tailwindcss(),
@@ -18,16 +19,16 @@ export default defineConfig({
         theme_color: "#0c0d12",
         background_color: "#0c0d12",
         display: "standalone",
-        start_url: "/",
+        start_url: process.env.GITHUB_ACTIONS ? "/poki/" : "/",
         icons: [
           {
-            src: "/poki-icon.svg",
+            src: "poki-icon.svg",
             sizes: "any",
             type: "image/svg+xml",
             purpose: "any",
           },
           {
-            src: "/poki-maskable.svg",
+            src: "poki-maskable.svg",
             sizes: "any",
             type: "image/svg+xml",
             purpose: "maskable",

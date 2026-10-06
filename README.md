@@ -33,6 +33,18 @@ python server\app.py
 
 The default WebSocket endpoint is `ws://127.0.0.1:5000/ws`. Set `VITE_SIGNALING_URL` in `.env` when the relay runs elsewhere.
 
+## Deploy to GitHub Pages
+
+The workflow in `.github/workflows/deploy-pages.yml` deploys the PWA from `main` to:
+
+```text
+https://gururajachar2008.github.io/poki/
+```
+
+Before the first deployment, open the repository's **Settings > Pages**, choose **GitHub Actions** as the source, then add a repository variable named `VITE_SIGNALING_URL` under **Settings > Secrets and variables > Actions > Variables**. Set it to the deployed WebSocket endpoint, for example `wss://your-backend.example.com/ws`.
+
+The workflow uses the `/poki/` base path and publishes only the static frontend. The Flask relay remains a separate deployment.
+
 ## Current MVP boundary
 
 Implemented: calculator arithmetic, hashed unlock, local text history, IndexedDB media attachments, image/video/audio previews, offline pending state, two-device room presence, and in-memory live packet relay.
