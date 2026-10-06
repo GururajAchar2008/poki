@@ -20,16 +20,23 @@ export default defineConfig({
         background_color: "#0c0d12",
         display: "standalone",
         start_url: process.env.GITHUB_ACTIONS ? "/poki/" : "/",
+        scope: process.env.GITHUB_ACTIONS ? "/poki/" : "/",
         icons: [
           {
             src: "poki-icon.svg",
-            sizes: "any",
+            sizes: "192x192",
+            type: "image/svg+xml",
+            purpose: "any",
+          },
+          {
+            src: "poki-icon.svg",
+            sizes: "512x512",
             type: "image/svg+xml",
             purpose: "any",
           },
           {
             src: "poki-maskable.svg",
-            sizes: "any",
+            sizes: "512x512",
             type: "image/svg+xml",
             purpose: "maskable",
           },

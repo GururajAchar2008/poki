@@ -43,9 +43,10 @@ type Attachment = {
 };
 
 type PeerPacket = {
-  type: "presence" | "message";
+  type: "presence" | "message" | "error";
   online?: boolean;
   message?: Message;
+  error?: string;
   senderId?: string;
 };
 
@@ -54,9 +55,13 @@ const PROFILE_KEY = "poki.profile";
 const SECRET_KEY = "poki.unlockHash";
 const ROOM_KEY = "poki.room";
 const DEVICE_KEY = "poki.device";
-const SIGNALING_URL =
+const SIGNALING_URL = (
   import.meta.env.VITE_SIGNALING_URL ??
-  "https://poki-backend-ktsn.onrender.com/ws";
+  "wss://poki-backend-ktsn.onrender.com/ws"
+)
+  .replace(/^http:\/\//, "ws://")
+  .replace(/^https:\/\//, "wss://")
+  .replace(/\/$/, "");
 
 const calculatorKeys = [
   "C",
@@ -169,6 +174,7 @@ function App() {
   const [messageText, setMessageText] = useState("");
   const [online, setOnline] = useState(false);
   const [peerName, setPeerName] = useState("your person");
+  const [connectionError, setConnectionError] = useState("");
   const [attachmentUrls, setAttachmentUrls] = useState<Record<string, string>>(
     {},
   );
@@ -191,6 +197,7 @@ function App() {
       `${SIGNALING_URL}/${encodeURIComponent(room)}`,
     );
     socketRef.current = socket;
+    setConnectionError("");
     socket.onopen = () => {
       setOnline(true);
       socket.send(
@@ -198,6 +205,7 @@ function App() {
           type: "hello",
           deviceId: deviceId.current,
           name: profile.name ?? "Poki friend",
+          pinHash: unlockHash ?? "",
         }),
       );
     };
@@ -207,6 +215,12 @@ function App() {
         if (packet.type === "presence") {
           setOnline(Boolean(packet.online));
           if (packet.name) setPeerName(packet.name);
+        }
+        if (packet.type === "error") {
+          setConnectionError(
+            packet.error ?? "Unable to join this private room.",
+          );
+          setOnline(false);
         }
         const incomingMessage = packet.message;
         if (
@@ -231,7 +245,7 @@ function App() {
       socketRef.current = null;
       setOnline(false);
     };
-  }, [view, room, profile.name]);
+  }, [view, room, profile.name, unlockHash]);
 
   const openChat = () => {
     setView("chat");
@@ -362,6 +376,7 @@ function App() {
             peerName={peerName}
             profileName={profile.name ?? "Poki friend"}
             room={room}
+            connectionError={connectionError}
             urls={attachmentUrls}
             onBack={lockChat}
             onSend={sendText}
@@ -460,6 +475,7 @@ function ChatScreen({
   peerName,
   profileName,
   room,
+  connectionError,
   urls,
   onBack,
   onSend,
@@ -472,6 +488,7 @@ function ChatScreen({
   peerName: string;
   profileName: string;
   room: string;
+  connectionError: string;
   urls: Record<string, string>;
   onBack: () => void;
   onSend: () => void;
@@ -504,6 +521,9 @@ function ChatScreen({
         <Wifi size={13} /> Private room <b>{room}</b>
         <span>Only two devices</span>
       </div>
+      {connectionError && (
+        <div className="room-connection-error">{connectionError}</div>
+      )}
       <div className="messages-list">
         {messages.length === 0 ? (
           <div className="empty-chat">
