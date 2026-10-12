@@ -61,7 +61,7 @@ const DEVICE_KEY = "poki.device";
 const THEME_KEY = "poki.theme";
 const SIGNALING_URL = (
   import.meta.env.VITE_SIGNALING_URL ??
-  "wss://poki-backend-ktsn.onrender.com/ws"
+  "https://poki-backend-ktsn.onrender.com/ws"
 )
   .replace(/^http:\/\//, "ws://")
   .replace(/^https:\/\//, "wss://")
