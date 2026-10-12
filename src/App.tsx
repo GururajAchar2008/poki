@@ -60,7 +60,7 @@ const ROOM_KEY = "poki.room";
 const DEVICE_KEY = "poki.device";
 const THEME_KEY = "poki.theme";
 const SIGNALING_URL = (
-  import.meta.env.VITE_SIGNALING_URL ??
+  import.meta.env.VITE_SIGNALING_URL ||
   "https://poki-backend-ktsn.onrender.com/ws"
 )
   .replace(/^http:\/\//, "ws://")
