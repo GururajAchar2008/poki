@@ -186,6 +186,7 @@ function App() {
     {},
   );
   const socketRef = useRef<WebSocket | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const deviceId = useRef(getDeviceId());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -205,69 +206,85 @@ function App() {
 
   useEffect(() => {
     if (view !== "chat") return;
-    const socket = new WebSocket(
-      `${SIGNALING_URL}/${encodeURIComponent(room)}`,
-    );
-    socketRef.current = socket;
-    setConnectionError("");
-    socket.onopen = () => {
-      setOnline(true);
-      socket.send(
-        JSON.stringify({
-          type: "hello",
-          deviceId: deviceId.current,
-          name: profile.name ?? "Poki friend",
-          pinHash: unlockHash ?? "",
-        }),
+    let disposed = false;
+    let retryDelay = 1500;
+    let retryConnection = true;
+
+    const connect = () => {
+      if (disposed) return;
+      const socket = new WebSocket(
+        `${SIGNALING_URL}/${encodeURIComponent(room)}`,
       );
-    };
-    socket.onmessage = (event) => {
-      try {
-        const packet = JSON.parse(event.data) as PeerPacket & { name?: string };
-        if (packet.type === "presence") {
-          setOnline(Boolean(packet.online));
-          if (packet.name) setPeerName(packet.name);
+      socketRef.current = socket;
+      socket.onopen = () => {
+        retryDelay = 1500;
+        setOnline(true);
+        setConnectionError("");
+        socket.send(
+          JSON.stringify({
+            type: "hello",
+            deviceId: deviceId.current,
+            name: profile.name ?? "Poki friend",
+            pinHash: unlockHash ?? "",
+          }),
+        );
+      };
+      socket.onmessage = (event) => {
+        try {
+          const packet = JSON.parse(event.data) as PeerPacket & {
+            name?: string;
+          };
+          if (packet.type === "presence") {
+            setOnline(Boolean(packet.online));
+            if (packet.name) setPeerName(packet.name);
+          }
+          if (packet.type === "connected") {
+            setOnline(Boolean(packet.online));
+          }
+          if (packet.type === "error") {
+            retryConnection = false;
+            setConnectionError(
+              packet.error ?? "Unable to join this private room.",
+            );
+            setOnline(false);
+          }
+          const incomingMessage = packet.message;
+          if (
+            packet.type === "message" &&
+            incomingMessage &&
+            packet.senderId !== deviceId.current
+          ) {
+            setMessages((current) =>
+              current.some((item) => item.id === incomingMessage.id)
+                ? current
+                : [...current, { ...incomingMessage, status: "delivered" }],
+            );
+          }
+        } catch {
+          // Ignore malformed packets from the signaling layer.
         }
-        if (packet.type === "connected") {
-          setOnline(Boolean(packet.online));
+      };
+      socket.onclose = () => {
+        setOnline(false);
+        if (!disposed && retryConnection) {
+          setConnectionError("Relay unavailable. Reconnecting...");
+          reconnectTimerRef.current = setTimeout(connect, retryDelay);
+          retryDelay = Math.min(retryDelay * 2, 10000);
         }
-        if (packet.type === "error") {
-          setConnectionError(
-            packet.error ?? "Unable to join this private room.",
-          );
-          setOnline(false);
-        }
-        const incomingMessage = packet.message;
-        if (
-          packet.type === "message" &&
-          incomingMessage &&
-          packet.senderId !== deviceId.current
-        ) {
-          setMessages((current) =>
-            current.some((item) => item.id === incomingMessage.id)
-              ? current
-              : [...current, { ...incomingMessage, status: "delivered" }],
-          );
-        }
-      } catch {
-        // Ignore malformed packets from the signaling layer.
-      }
+      };
+      socket.onerror = () => {
+        setOnline(false);
+        setConnectionError("Relay unavailable. Reconnecting...");
+        socket.close();
+      };
     };
-    socket.onclose = () => {
-      setOnline(false);
-      setConnectionError(
-        (current) =>
-          current || "Connection closed. Check the backend URL and try again.",
-      );
-    };
-    socket.onerror = () => {
-      setOnline(false);
-      setConnectionError(
-        "Could not connect to the Poki relay. Make sure the backend is running with wss:// enabled.",
-      );
-    };
+
+    connect();
     return () => {
-      socket.close();
+      disposed = true;
+      retryConnection = false;
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      socketRef.current?.close();
       socketRef.current = null;
       setOnline(false);
     };
