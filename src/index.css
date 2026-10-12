@@ -9,6 +9,12 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
+html {
+  color-scheme: dark;
+}
+html[data-theme="light"] {
+  color-scheme: light;
+}
 * {
   box-sizing: border-box;
 }

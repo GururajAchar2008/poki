@@ -1,31 +1,36 @@
 :root {
-  --ink: #f3f3f0;
-  --muted: #898b95;
-  --quiet: #555863;
-  --line: rgba(255, 255, 255, 0.09);
-  --panel: rgba(25, 27, 35, 0.82);
-  --violet: #a993ff;
-  --blue: #7cc7ff;
-  --green: #8ce5a7;
-  --red: #ff8a93;
+  --ink: #f4f4f1;
+  --muted: #a3a5ad;
+  --quiet: #6c7079;
+  --line: rgba(255, 255, 255, 0.11);
+  --panel: #191b20;
+  --accent: #e8c56b;
+  --accent-strong: #11120f;
+  --green: #75d99a;
+  --red: #ed8b91;
+  --surface-soft: rgba(255, 255, 255, 0.06);
+}
+:root[data-theme="light"] {
+  --ink: #171918;
+  --muted: #656a67;
+  --quiet: #8b908c;
+  --line: rgba(20, 25, 22, 0.13);
+  --panel: #f8f8f4;
+  --accent: #b78225;
+  --accent-strong: #fffdf5;
+  --green: #20834b;
+  --red: #bb4f57;
+  --surface-soft: rgba(20, 25, 22, 0.055);
 }
 .poki-shell {
   min-height: 100svh;
   display: grid;
   place-items: center;
   padding: 24px 16px;
-  background:
-    radial-gradient(
-      circle at 14% 12%,
-      rgba(91, 75, 162, 0.22),
-      transparent 33%
-    ),
-    radial-gradient(
-      circle at 88% 84%,
-      rgba(41, 101, 144, 0.16),
-      transparent 30%
-    ),
-    #0c0d12;
+  background: #101211;
+}
+:root[data-theme="light"] .poki-shell {
+  background: #e9ebe6;
 }
 .calculator-card,
 .chat-card {
@@ -36,11 +41,7 @@
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 28px;
-  background: linear-gradient(
-    150deg,
-    rgba(28, 30, 39, 0.96),
-    rgba(16, 18, 24, 0.98)
-  );
+  background: var(--panel);
   box-shadow:
     0 28px 90px rgba(0, 0, 0, 0.38),
     inset 0 1px rgba(255, 255, 255, 0.05);
@@ -60,6 +61,9 @@
   justify-content: space-between;
   padding: 28px 28px 10px;
 }
+.calculator-topbar > .icon-button {
+  margin-left: auto;
+}
 .calculator-brand {
   gap: 11px;
 }
@@ -70,7 +74,7 @@
   height: 34px;
   border-radius: 11px;
   color: #101014;
-  background: var(--violet);
+  background: var(--accent);
   font-size: 23px;
   font-weight: 800;
   line-height: 1;
@@ -103,7 +107,7 @@
   border: 1px solid var(--line);
   border-radius: 12px;
   color: var(--muted);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface-soft);
   cursor: pointer;
 }
 .icon-button {
@@ -145,7 +149,7 @@
   border: 1px solid transparent;
   border-radius: 17px;
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.065);
+  background: var(--surface-soft);
   font-size: 20px;
   cursor: pointer;
   transition:
@@ -161,13 +165,13 @@
   background: transparent;
 }
 .calc-key--operator {
-  color: var(--violet);
-  background: rgba(169, 147, 255, 0.1);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 .calc-key--equals {
   grid-column: span 2;
-  color: #101014;
-  background: var(--violet);
+  color: var(--accent-strong);
+  background: var(--accent);
 }
 .calculator-footer {
   justify-content: center;
@@ -195,7 +199,7 @@
   height: 39px;
   border-radius: 14px;
   color: #101014;
-  background: linear-gradient(145deg, #a993ff, #7cc7ff);
+  background: var(--accent);
   font-size: 16px;
   font-weight: 700;
 }
@@ -242,7 +246,7 @@
   background: rgba(255, 255, 255, 0.025);
 }
 .room-strip b {
-  color: var(--violet);
+  color: var(--accent);
   font-weight: 500;
 }
 .room-strip span {
@@ -305,9 +309,9 @@
   background: rgba(255, 255, 255, 0.06);
 }
 .message-bubble--own {
-  border-color: rgba(169, 147, 255, 0.22);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
   border-radius: 16px 16px 5px 16px;
-  background: rgba(106, 83, 182, 0.32);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 .message-bubble p {
   margin: 0;
@@ -332,12 +336,12 @@
   align-items: center;
   gap: 4px;
   margin-top: 5px;
-  color: rgba(255, 255, 255, 0.43);
+  color: var(--quiet);
   font-family: "DM Mono", monospace;
   font-size: 9px;
 }
 .message-bubble--own .message-meta svg {
-  color: var(--blue);
+  color: var(--accent);
 }
 .pending-dot {
   font-size: 16px;
@@ -356,7 +360,7 @@
   padding: 8px;
   border: 1px solid var(--line);
   border-radius: 17px;
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--surface-soft);
 }
 .composer input {
   min-width: 0;
@@ -388,8 +392,8 @@
   height: 34px;
   border: 0;
   border-radius: 11px;
-  color: #101014;
-  background: var(--violet);
+  color: var(--accent-strong);
+  background: var(--accent);
   cursor: pointer;
 }
 .chat-footer {
@@ -414,7 +418,7 @@
   padding: 24px;
   border: 1px solid var(--line);
   border-radius: 22px;
-  background: #1a1c24;
+  background: var(--panel);
   box-shadow: 0 20px 70px rgba(0, 0, 0, 0.45);
 }
 .settings-modal header {
@@ -443,12 +447,12 @@
   border-radius: 11px;
   outline: 0;
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.045);
+  background: var(--surface-soft);
   font-family: "Manrope", sans-serif;
   font-size: 13px;
 }
 .settings-modal input:focus {
-  border-color: var(--violet);
+  border-color: var(--accent);
 }
 .security-note {
   display: flex;
@@ -471,8 +475,8 @@
   padding: 13px;
   border: 0;
   border-radius: 12px;
-  color: #101014;
-  background: var(--violet);
+  color: var(--accent-strong);
+  background: var(--accent);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;

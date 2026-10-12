@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Check,
   CheckCheck,
+  Calculator,
   Delete,
   LockKeyhole,
   Mic,
@@ -14,9 +15,11 @@ import {
   Settings,
   ShieldCheck,
   Smile,
+  Sun,
   Unlock,
   Wifi,
   X,
+  Moon,
 } from "lucide-react";
 import "./App.css";
 
@@ -55,6 +58,7 @@ const PROFILE_KEY = "poki.profile";
 const SECRET_KEY = "poki.unlockHash";
 const ROOM_KEY = "poki.room";
 const DEVICE_KEY = "poki.device";
+const THEME_KEY = "poki.theme";
 const SIGNALING_URL = (
   import.meta.env.VITE_SIGNALING_URL ??
   "wss://poki-backend-ktsn.onrender.com/ws"
@@ -159,6 +163,9 @@ const saveAttachment = async (attachment: Attachment) => {
 };
 
 function App() {
+  const [theme, setTheme] = useState<"light" | "dark">(
+    () => (localStorage.getItem(THEME_KEY) as "light" | "dark") ?? "dark",
+  );
   const [view, setView] = useState<View>("calculator");
   const [expression, setExpression] = useState("");
   const [unlockSequence, setUnlockSequence] = useState("");
@@ -181,6 +188,11 @@ function App() {
   const socketRef = useRef<WebSocket | null>(null);
   const deviceId = useRef(getDeviceId());
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem(THEME_KEY, theme);
+  }, [theme]);
 
   useEffect(() => {
     localStorage.setItem(MESSAGE_KEY, JSON.stringify(messages));
@@ -369,6 +381,9 @@ function App() {
     setMessages(readMessages());
   };
 
+  const toggleTheme = () =>
+    setTheme((current) => (current === "dark" ? "light" : "dark"));
+
   return (
     <main className="poki-shell">
       <AnimatePresence mode="wait">
@@ -379,6 +394,8 @@ function App() {
             onKey={handleCalculatorKey}
             onSettings={() => setShowSettings(true)}
             hasPin={Boolean(unlockHash)}
+            theme={theme}
+            onToggleTheme={toggleTheme}
           />
         ) : (
           <ChatScreen
@@ -395,6 +412,8 @@ function App() {
             onBack={lockChat}
             onSend={sendText}
             onMedia={() => fileInputRef.current?.click()}
+            theme={theme}
+            onToggleTheme={toggleTheme}
           />
         )}
       </AnimatePresence>
@@ -427,11 +446,15 @@ function CalculatorScreen({
   onKey,
   onSettings,
   hasPin,
+  theme,
+  onToggleTheme,
 }: {
   expression: string;
   onKey: (key: string) => void;
   onSettings: () => void;
   hasPin: boolean;
+  theme: "light" | "dark";
+  onToggleTheme: () => void;
 }) {
   return (
     <motion.section
@@ -442,7 +465,9 @@ function CalculatorScreen({
     >
       <header className="calculator-topbar">
         <div className="calculator-brand">
-          <div className="brand-mark">p</div>
+          <div className="brand-mark" aria-hidden="true">
+            <Calculator size={20} strokeWidth={2.4} />
+          </div>
           <div>
             <span className="eyebrow">Poki utility</span>
             <strong>Calculator</strong>
@@ -454,6 +479,13 @@ function CalculatorScreen({
           onClick={onSettings}
         >
           <Settings size={18} />
+        </button>
+        <button
+          className="icon-button"
+          aria-label={`Use ${theme === "dark" ? "light" : "dark"} theme`}
+          onClick={onToggleTheme}
+        >
+          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
         </button>
       </header>
       <div className="calculator-display">
@@ -494,6 +526,8 @@ function ChatScreen({
   onBack,
   onSend,
   onMedia,
+  theme,
+  onToggleTheme,
 }: {
   messages: Message[];
   messageText: string;
@@ -507,6 +541,8 @@ function ChatScreen({
   onBack: () => void;
   onSend: () => void;
   onMedia: () => void;
+  theme: "light" | "dark";
+  onToggleTheme: () => void;
 }) {
   const deviceId = localStorage.getItem(DEVICE_KEY);
   return (
@@ -529,6 +565,13 @@ function ChatScreen({
         </div>
         <button className="icon-button" aria-label="More options">
           <MoreHorizontal size={20} />
+        </button>
+        <button
+          className="icon-button"
+          aria-label={`Use ${theme === "dark" ? "light" : "dark"} theme`}
+          onClick={onToggleTheme}
+        >
+          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
         </button>
       </header>
       <div className="room-strip">
